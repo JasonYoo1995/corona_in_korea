@@ -1,0 +1,585 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+</head>
+
+<body>
+    <h4> 1.</h4>
+    <button id="bus">직접, 버스 정보 로드</button>
+    <div id="show_bus">이 곳에 버스 정보가 보여집니다</div>
+
+    <h4> 1-2.</h4>
+    <button id="bus2">Gateway로, 버스 정보 로드</button>
+    <div id="show_bus2">이 곳에 버스 정보가 보여집니다</div>
+
+    <h4> 1-3.</h4>
+    <button id="bus3">AWS SDK의 Lambda 객체로, 버스 정보 로드</button>
+    <div id="show_bus3">이 곳에 버스 정보가 보여집니다</div>
+
+    <h4> 2.</h4>
+    <input id="bucket_name" type="text" placeholder="버킷 이름 입력">
+    <button id="create_bucket">AWS SDK의 S3 객체로, 버킷 생성</button>
+    <div id="show_create_bucket"></div>
+
+    <h4> 2-2.</h4>
+    <input id="bucket_name2" type="text" placeholder="버킷 이름 입력">
+    <button id="create_bucket2">Gateway로, S3 버킷 생성</button>
+    <div id="show_create_bucket2"></div>
+
+    <h4> 3.</h4>
+    <input id="bucket_name_for_object" type="text" placeholder="버킷 이름 입력" value="jason-yoo-test-1">
+    <input id="object_name" type="text" placeholder="파일 이름 입력">
+    <button id="create_object">AWS SDK의 S3 객체로, 파일 생성</button>
+    <div id="show_create_object"></div>
+
+    <h4> 4. </h4>
+    <input id="bucket_name_for_object2" type="text" placeholder="버킷 이름 입력" value="jason-yoo-test-1">
+    <input id="object_name2" type="text" placeholder="파일 이름 입력" value="ground2">
+    <button id="retrieve_object">AWS SDK의 S3 객체로, 파일 다운로드 후 출력</button>
+    <br>
+    <img id='picture' height='200px'></img>
+
+    <h4> 5.</h4>
+    <input id="bucket_name_for_object3" type="text" placeholder="버킷 이름 입력" value="jason-yoo-test-1">
+    <input id="object_name3" type="text" placeholder="파일 이름 입력">
+    <button id="delete_object">AWS SDK의 S3 객체로, 파일 삭제</button>
+
+    <h4> 5-2.</h4>
+    <input id="bucket_name_for_object3_gateway" type="text" placeholder="버킷 이름 입력" value="jason-yoo-test-1">
+    <input id="object_name3_gateway" type="text" placeholder="파일 이름 입력">
+    <button id="delete_object_gateway">Gateway로, 파일 삭제</button>
+
+    <h4> 6. </h4>
+    <input id="bucket_name_for_object4" type="text" placeholder="버킷 이름 입력" value="jason-yoo-test-1">
+    <button id="list_object">AWS SDK의 S3 객체로, 파일 리스트 출력</button>
+    <div id="show_list">이 곳에 파일 목록이 보여집니다</div>
+
+    <h4> 6-2. </h4>
+    <input id="bucket_name_for_object4_gateway" type="text" placeholder="버킷 이름 입력" value="jason-yoo-test-1">
+    <button id="list_object_gateway">Gateway로, 파일 리스트 출력</button>
+    <div id="show_list_gateway">이 곳에 파일 목록이 보여집니다</div>
+
+    <h4> 7.</h4>
+    <input id="input_sdk_lambda" type="text" placeholder="파라미터 1개 입력">
+    <button id="btn_sdk_lambda">AWS SDK의 Lambda 객체로, 람다 함수 호출</button>
+    <div id="show_sdk_lambda">이 곳에 전송한 값 그대로 받아와서 출력</div>
+
+    <h4> 8.</h4>
+    <button id="corona_status">Gateway로, 코로나 감염 현황</button>
+    <div id="show_corona_status"></div>
+
+    <h4> 8-2.</h4>
+    <button id="corona_city">Gateway로, 코로나 시도별 현황</button>
+    <div id="show_corona_city"></div>
+
+    <h4> 8-3.</h4>
+    <button id="corona_hospital">Gateway로, 코로나 병원 정보</button>
+    <div id="show_corona_hospital"></div>
+
+    <h4> 9. 그래프</h4>
+    <div style="width: 500px; height: 500px">
+        <canvas id="myChart"></canvas>
+    </div>
+</body>
+
+<script>
+    $(function() {
+        $('#bus').click(function() {
+            var id = '200000078';
+            $.ajax({
+                url: '/bus?id=' + id,
+                type: 'GET',
+                success: function(data) {
+                    //alert(data.new_data);
+                    var str = "";
+                    data.new_data.forEach(function(item, index) {
+                        str += `[${index}] = ${item}<br>`;
+                    });
+                    //alert(str);
+                    $("#show_bus").html(str);
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#bus2').click(function() {
+            var id = '200000078';
+            $.ajax({
+                url: '/bus_gateway?id=' + id,
+                type: 'GET',
+                success: function(data) {
+                    // alert(data.new_data);
+                    var str = "";
+                    data.new_data.forEach(function(item, index) {
+                        str += `[${index}] = ${item}<br>`;
+                    });
+                    // alert(str);
+                    $("#show_bus2").html(str);
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#bus3').click(function() {
+            var id = '200000078';
+            $.ajax({
+                url: '/bus_lambda?id=' + id,
+                type: 'GET',
+                success: function(data) {
+                    // alert(data.new_data);
+                    var str = "";
+                    data.new_data.forEach(function(item, index) {
+                        str += `[${index}] = ${item}<br>`;
+                    });
+                    // alert(str);
+                    $("#show_bus3").html(str);
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#create_bucket').click(function() {
+            $.ajax({
+                url: '/folder?name=' + $('#bucket_name').val(),
+                type: 'POST',
+                success: function(data) {
+                    $("#bucket_name").val("");
+                    $("#show_create_bucket").text("버킷이 생성되었습니다.");
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#create_bucket2').click(function() {
+            $.ajax({
+                url: '/s3?bucket_name=' + $('#bucket_name2').val(),
+                type: 'POST',
+                success: function(data) {
+                    $("#bucket_name2").val("");
+                    $("#show_create_bucket2").text("버킷이 생성되었습니다.");
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#create_object').click(function() {
+            $.ajax({
+                url: `/file?bucket_name=${$('#bucket_name_for_object').val()}&object_name=${$('#object_name').val()}`,
+                type: 'POST',
+                success: function(data) {
+                    // $("#bucket_name_for_object").val("");
+                    // $("#object_name").val("");
+                    $("#show_create_object").text("파일이 생성되었습니다.");
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        // $('#create_object_gateway').click(function() {
+        //     $.ajax({
+        //         url: `/file_gateway?bucket_name=${$('#bucket_name_for_object_gateway').val()}&object_name=${$('#object_name_gateway').val()}`,
+        //         type: 'POST',
+        //         success: function(data) {
+        //             // $("#bucket_name_for_object").val("");
+        //             // $("#object_name").val("");
+        //             $("#show_create_object_gateway").text("파일이 생성되었습니다.");
+        //         },
+        //         error: function(e) {
+        //             console.log(e);
+        //         }
+        //     });
+        // });
+
+        $('#retrieve_object').click(function() {
+            $.ajax({
+                url: `/retrieve?bucket_name=${$('#bucket_name_for_object2').val()}&object_name=${$('#object_name2').val()}`,
+                type: 'GET',
+                success: function(data) {
+                    // alert(data.file_name);
+                    $('#picture').attr("src", `${data.file_name}.jpg`);
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#delete_object').click(function() {
+            $.ajax({
+                url: `/delete?bucket_name=${$('#bucket_name_for_object3').val()}&object_name=${$('#object_name3').val()}`,
+                type: 'DELETE',
+                success: function(data) {
+                    // alert(data);
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#delete_object_gateway').click(function() {
+            $.ajax({
+                url: `/delete_gateway?bucket_name=${$('#bucket_name_for_object3_gateway').val()}&object_name=${$('#object_name3_gateway').val()}`,
+                type: 'DELETE',
+                success: function(data) {},
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#list_object').click(function() {
+            $.ajax({
+                url: `/list?bucket_name=${$('#bucket_name_for_object4').val()}&folder_name=${$('#folder_name').val()}`,
+                type: 'GET',
+                success: function(data) {
+                    var list = "";
+                    for (var i = 0; i < data.length; i++) {
+                        var name = JSON.stringify(data[i].Key);
+                        if (name.substr(1, 7) == "images/") {
+                            list += name.substring(8, name.length - 1) + '  /  ';
+                        }
+                    }
+                    $("#show_list").text(list);
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#list_object_gateway').click(function() {
+            $.ajax({
+                url: `/list_gateway?bucket_name=${$('#bucket_name_for_object4_gateway').val()}`,
+                type: 'GET',
+                success: function(data) {
+                    var list = "";
+                    for (var i = 0; i < data.new_data.length; i++) {
+                        var name = JSON.stringify(data.new_data[i].Key);
+                        if (name.substr(1, 7) == "images/") {
+                            list += name.substring(8, name.length - 1) + '  /  ';
+                        }
+                    }
+                    $("#show_list_gateway").text(list);
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#btn_gateway_lambda').click(function() {
+            $.ajax({
+                url: '/gateway_lambda?param=' + $('#input_gateway_lambda').val(),
+                type: 'POST',
+                success: function(data) {
+                    $("#show_gateway_lambda").html(JSON.parse(data.new_data).result);
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#btn_sdk_lambda').click(function() {
+            $.ajax({
+                url: '/sdk_lambda?param=' + $('#input_sdk_lambda').val(),
+                type: 'POST',
+                success: function(data) {
+                    // $("#show_sdk_lambda").html(JSON.parse(data.new_data).result);
+                    $("#show_sdk_lambda").html(JSON.parse(data.new_data).result);
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#corona_status').click(function() {
+            var start = '20200402';
+            var end = '20200403';
+            var duplicate = "";
+            $.ajax({
+                url: '/corona_status_gateway?start=' + start + '&end=' + end,
+                type: 'GET',
+                success: function(data) {
+                    // alert(data.new_data);
+                    var str = "";
+                    $(data.new_data).find('item').each(function() { // xml 문서 item 기준으로 분리후 반복
+                        if (duplicate == $(this).find("stateDt").text()) return; // 날짜 중복 검사
+                        else duplicate = $(this).find("stateDt").text();
+                        str += "<br>=============== " + $(this).find("stateDt").text() + " = 기준일 + 1" + " ===============";
+                        str += "<br><확진자 누적 수><br>";
+                        str += $(this).find("decideCnt").text();
+                        str += "<br><격리해제 누적수><br>";
+                        str += $(this).find("clearCnt").text();
+                        str += "<br><사망자 누적수><br>";
+                        str += $(this).find("deathCnt").text();
+                        str += "<br><치료 환자 누적수><br>";
+                        str += $(this).find("careCnt").text();
+                        str += "<br><일일 검사자 수><br>";
+                        str += $(this).find("examCnt").text();
+                        str += "<br><검사 결과 음성판정 누적><br>";
+                        str += $(this).find("resutlNegCnt").text();
+                        str += "<br><검사 누적수><br>";
+                        str += $(this).find("accExamCompCnt").text();
+                        str += "<br><검사 대비 확진률 (누적 평균)><br>";
+                        str += $(this).find("accDefRate").text();
+                    });
+                    $("#show_corona_status").html(str);
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#corona_city').click(function() {
+            var start = '20201125';
+            var end = start
+            $.ajax({
+                url: '/corona_city_gateway?start=' + start + '&end=' + end,
+                type: 'GET',
+                success: function(data) {
+                    // alert(data.new_data);
+                    var str = "";
+                    str += "<" + start + " = 기준일 + 1 >";
+                    $(data.new_data).find('item').each(function() { // xml 문서 item 기준으로 분리후 반복
+                        str += "<br>=============== " + $(this).find("gubun").text() + " ===============";
+                        str += "<br><누적 사망자 수><br>";
+                        str += $(this).find("deathCnt").text();
+                        str += "<br><누적 확진자 수><br>";
+                        str += $(this).find("defCnt").text();
+                        str += "<br><격리 중인 환자 수><br>";
+                        str += $(this).find("isolIngCnt").text();
+                        str += "<br><해외 유입 수><br>";
+                        str += $(this).find("overFlowCnt").text();
+                        str += "<br><일일 지역 발생 수><br>";
+                        str += $(this).find("localOccCnt").text();
+                    });
+                    $("#show_corona_city").html(str);
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        $('#corona_hospital').click(function() {
+            var type = 'A0'; // A0 97 99
+            // A0: 국민안심병원
+            // 97: 코로나검사실시기관
+            // 99: 코로나 선별진료소 운영기관
+            $.ajax({
+                url: '/corona_hospital_gateway?type=' + type,
+                type: 'GET',
+                success: function(data) {
+                    // alert(data.new_data);
+                    var str = "";
+                    $(data.new_data).find('item').each(function() { // xml 문서 item 기준으로 분리후 반복
+                        str += "<br>=======================================";
+                        str += "<br><시도명><br>";
+                        str += $(this).find("sidoNm").text();
+                        str += "<br><시군구명><br>";
+                        str += $(this).find("sgguNm").text();
+                        str += "<br><기관명><br>";
+                        str += $(this).find("yadmNm").text();
+                        str += "<br><선정유형><br>";
+                        str += $(this).find("hospTyTpCd").text();
+                        str += "<br><전화번호><br>";
+                        str += $(this).find("telno").text();
+                        str += "<br><구분코드><br>";
+                        str += $(this).find("spclAdmTyCd").text();
+                    });
+                    $("#show_corona_hospital").html(str);
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        });
+
+        var ctx = $('#myChart');
+
+        // var labels = [new Date(2020, 1, 17), new Date(2020, 3, 1), new Date(2020, 5, 17), new Date(2020, 7, 12), new Date(2020, 10, 30)];
+        // var data = [{
+        //     t: labels[0],
+        //     y: 1
+        // }, {
+        //     t: labels[1],
+        //     y: 10
+        // }, {
+        //     t: labels[2],
+        //     y: 5
+        // }, {
+        //     t: labels[3],
+        //     y: 11
+        // }, {
+        //     t: labels[4],
+        //     y: 13
+        // }];
+
+        var labels = []
+        var data = []
+        for (var i = 0; i < 25; i++) {
+            labels.push(new Date(2020, 8, i % 25 + 1));
+            data.push({
+                t: labels[i],
+                y: i
+            });
+        }
+
+        for (var i = 0; i < 30; i++) {
+            labels.push(new Date(2020, 9, i % 30 + 1));
+            data.push({
+                t: labels[i + 25],
+                y: i + 30
+            });
+        }
+
+        for (var i = 0; i < 10; i++) {
+            labels.push(new Date(2020, 10, i % 30 + 1));
+            data.push({
+                t: labels[i + 55],
+                y: i + 60
+            });
+        }
+
+        var myLineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '확진자 수',
+                    data: data,
+                    backgroundColor: ['rgba(75, 192, 192, 0.2)'],
+                    borderColor: ['rgba(75, 192, 192, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: '코로나 바이러스 추세',
+                    fontSize: 20
+                },
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            displayFormats: {
+                                day: 'MM월'
+                            }
+                        },
+                        ticks: {
+                            // callback: function(label, index, labels) {
+                            //     return translate_label(label);
+                            // }
+                        }
+                    }]
+                },
+                legend: {
+                    labels: {
+                        fontSize: 15
+                    }
+                },
+                animation: {
+                    duration: 1,
+                    onComplete: function() {
+                        var chartInstance = this.chart,
+                            ctx = chartInstance.ctx;
+                        ctx.font = Chart.helpers.fontString(12, 'normal', 'Helvetica Neue');
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+
+                        this.data.datasets.forEach(function(dataset, i) {
+                            var meta = chartInstance.controller.getDatasetMeta(i);
+                            meta.data.forEach(function(bar, index) {
+                                // var data = dataset.data[index];
+                                if (index == data.length - 1)
+                                    ctx.fillText(data[index].y, bar._model.x, bar._model.y - 5);
+                            });
+                        });
+                    }
+                }
+            }
+        });
+
+        // function translate_month(month) {
+        //     var string = month;
+        //     switch (month) {
+        //         case 'Jan':
+        //             string = '01';
+        //             break;
+        //         case 'Feb':
+        //             string = '02';
+        //             break;
+        //         case 'Mar':
+        //             string = '03';
+        //             break;
+        //         case 'Apr':
+        //             string = '04';
+        //             break;
+        //         case 'May':
+        //             string = '05';
+        //             break;
+        //         case 'Jun':
+        //             string = '06';
+        //             break;
+        //         case 'Jul':
+        //             string = '07';
+        //             break;
+        //         case 'Aug':
+        //             string = '08';
+        //             break;
+        //         case 'Sep':
+        //             string = '09';
+        //             break;
+        //         case 'Oct':
+        //             string = '10';
+        //             break;
+        //         case 'Nov':
+        //             string = '11';
+        //             break;
+        //         case 'Dec':
+        //             string = '12';
+        //             break;
+        //     }
+        //     return string;
+        // }
+
+        // function translate_label(label) {
+        //     month = label.match(/Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec/g);
+        //     if (!month)
+        //         return label;
+        //     translation = translate_month(month[0]);
+        //     alert(month[0]);
+        //     return label.replace(month, translation, 'g');
+        // }
+
+    });
+</script>
+
+</html>
+
+</html>
+
+</html>
+
+</html>

@@ -1,0 +1,169 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <link href="stylesheets/hospital.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div id='search_box'>
+        <div class="mg10">병원 종류</div>
+        <select id="select_spclAdmTyCd" class="mg10">
+            <option value="1">코로나 검사 실시기관</option>
+            <option value="2">코로나 선별진료소 운영기관</option>
+            <option value="3">국민안심병원</option>
+        </select>
+        <div class="mg10">선정 유형</div>
+        <select id="select_hospTyTpCd" class="mg10">
+            <option value="0">--전체--</option>
+            <option value="1">A</option>
+            <option value="2">B</option>
+        </select>
+        <div class="mg10">시도명</div>
+        <input id='input_city' class="mg10">
+        <button id='search' class="mg10">검색</button>
+        <div id="explain_type">선정 유형 A : 일반 호흡기 환자 진료를 위한 호흡기 전용 외래 설치 운영 병원<br> 선정 유형 B : 호흡기 환자 전용 외래입원 진료가 가능한 선별진료소 운영 병원</div>
+    </div>
+    <div id='result_box'>
+        <div class='main_container'>
+            <div class='main_table' style='width: 300px;'>병원 종류</div>
+            <div class='main_table' style='width: 100px;'>시도명</div>
+            <div class='main_table' style='width: 200px;'>시군구</div>
+            <div class='main_table' style='width: 350px;'>기관명</div>
+            <div class='main_table' style='width: 100px;'>선정유형</div>
+            <div class='main_table' style='width: 200px;'>전화번호</div>
+        </div>
+    </div>
+</body>
+
+<script>
+    var type = "";
+    var AB = "";
+    var city = "";
+
+    $('#select_spclAdmTyCd').change(function() {
+        type = translate_type($(this).find(":selected").text());
+    });
+
+    $('#select_hospTyTpCd').change(function() {
+        AB = $(this).find(":selected").text();
+        if (AB == '--전체--') AB = '';
+    });
+
+    function filter(hospital_list, category, value) {
+        var filtered_list = [];
+        if (value == "") return hospital_list; // not filter
+        switch (category) {
+            case 'AB':
+                hospital_list.forEach(element => {
+                    if (element.hospTyTpCd == value) filtered_list.push(element);
+                });
+                break;
+            case 'city':
+                hospital_list.forEach(element => {
+                    if (element.sidoNm == value) filtered_list.push(element);
+                });
+                break;
+        }
+        return filtered_list;
+    }
+
+    function translate_type(type) {
+        switch (type) {
+            case 'A0':
+                return '국민안심병원';
+                break;
+            case '97':
+                return '코로나 검사 실시기관';
+                break;
+            case '99':
+                return '코로나 선별진료소 운영기관';
+                break;
+
+            case '국민안심병원':
+                return 'A0';
+                break;
+            case '코로나 검사 실시기관':
+                return '97';
+                break;
+            case '코로나 선별진료소 운영기관':
+                return '99';
+                break;
+            case '--전체--':
+                return '';
+                break;
+            case '':
+                return '';
+                break;
+        }
+    }
+
+    function empty_box() {
+        var html = `
+        <div class='main_container'>
+            <div class='main_table' style='width: 300px;'>병원 종류</div>
+            <div class='main_table' style='width: 100px;'>시도명</div>
+            <div class='main_table' style='width: 200px;'>시군구</div>
+            <div class='main_table' style='width: 350px;'>기관명</div>
+            <div class='main_table' style='width: 100px;'>선정유형</div>
+            <div class='main_table' style='width: 200px;'>전화번호</div>
+            </div>
+        `;
+        $('#result_box').empty();
+        $('#result_box').append(html);
+    }
+
+    var wait = false;
+    $('#search').click(function() {
+        if (wait) return;
+        wait = true;
+
+        empty_box();
+
+        city = $('#input_city').val();
+        var hospital_list = [];
+        $.ajax({
+            url: '/corona_hospital_gateway?type=' + type,
+            type: 'GET',
+            success: function(data) {
+                $(data.new_data).find('item').each(function() { // xml 문서 item 기준으로 분리후 반복
+                    hospital_list.push({
+                        spclAdmTyCd: $(this).find("spclAdmTyCd").text(),
+                        sidoNm: $(this).find("sidoNm").text(),
+                        sgguNm: $(this).find("sgguNm").text(),
+                        yadmNm: $(this).find("yadmNm").text(),
+                        hospTyTpCd: $(this).find("hospTyTpCd").text(),
+                        telno: $(this).find("telno").text(),
+                    });
+                });
+
+                // 필터링
+                if (type == 'A0') hospital_list = filter(hospital_list, 'AB', AB);
+                hospital_list = filter(hospital_list, 'city', city);
+
+                hospital_list.forEach(element => {
+                    var html = `
+                        <div class='container'>
+                            <div class='table' style='width: 300px;'>${translate_type(element.spclAdmTyCd)}</div>
+                            <div class='table' style='width: 100px;'>${element.sidoNm}</div>
+                            <div class='table' style='width: 200px;'>${element.sgguNm}</div>
+                            <div class='table' style='width: 350px;'>${element.yadmNm}</div>
+                            <div class='table' style='width: 100px;'>${element.hospTyTpCd}</div>
+                            <div class='table' style='width: 200px;'>${element.telno}</div>
+                        </div>
+                    `;
+                    $('#result_box').append(html);
+                });
+
+                wait = false;
+            },
+            error: function(e) {
+                console.log(e);
+            }
+        });
+    });
+</script>
+
+</html>

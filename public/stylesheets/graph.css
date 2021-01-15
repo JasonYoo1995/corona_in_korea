@@ -1,0 +1,114 @@
+#div0 {
+    border: 0.5px solid black;
+    border-radius: 10px;
+    margin: 20;
+}
+
+#div1 {
+    background: #DBF2F2;
+    border-radius: 10px 10px 0 0;
+}
+
+.btn.category {
+    border: 0.5px solid black;
+    border-radius: 10px;
+    padding: 5 10;
+    margin: 5;
+    float: left;
+    font-size: 15;
+}
+
+.btn.region {
+    border: 0.5px solid black;
+    border-radius: 10px;
+    padding: 5 10;
+    margin: 3 5;
+    float: left;
+    font-size: 15;
+}
+
+.control_btn {
+    border: 0.5px solid black;
+    border-radius: 10px;
+    font-size: 15;
+    padding: 5;
+}
+
+#div2 {
+    background: #DBF2F2;
+}
+
+#div2-2 {
+    border: 0.5px solid black;
+    border-radius: 10px;
+    padding: 10 20 0 20;
+    background: white;
+    border-radius: 10px;
+    z-index: 3;
+    align-items: center;
+}
+
+.middle_div {
+    padding: 0 10;
+}
+
+#div2-3 {
+    z-index: 3;
+}
+
+#div3 {
+    background: #DBF2F2;
+    border-radius: 0 0 10px 10px;
+    z-index: 2;
+}
+
+.margin1 {
+    margin: 5px;
+}
+
+body {
+    background: #2d5593;
+}
+
+#div4 {
+    background: #DBF2F2;
+    border-radius: 10px;
+    margin: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#div5 {
+    background: #DBF2F2;
+    border-radius: 10px;
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+#img_container {
+    border: 0.5px solid black;
+    border-radius: 10px;
+    padding: 10 20 0 20;
+    background: white;
+    border-radius: 10px;
+    align-items: center;
+    padding: 20 10 20 10;
+    margin: 10;
+}
+
+#captured_image {
+    height: 330px;
+}
+
+.img_btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 18px;
+    border: solid 0.05rem;
+    border-color: black;
+    padding: 3px;
+    background: white;
+    margin: 0 5 0 0;
+}

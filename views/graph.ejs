@@ -1,0 +1,775 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.0.0-rc.5/dist/html2canvas.min.js"></script>
+    <link href="stylesheets/graph.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div id='div0' style='background: none; width: 1000px; height: 500px; display: flex; flex-direction: column;'>
+        <div id='div1' style='width: 1000px; height: 60px; font-size: 20; font-weight: bold; text-align: center; line-height: 60px;'></div>
+        <div id='div2' style='width: 1000px; height: 380px; display: flex; flex-direction: row;'>
+            <div id='div2-1' class='middle_div' style='background: none; width:14%; height: 380px; display: flex; flex-direction: column;'>
+                <label class='margin1' for="date_start">From :</label>
+                <input class='margin1' type="date" id="date_start" min="2019-01-01" max="2025-12-31">
+                <label class='margin1' for="date_end">To :</label>
+                <input class='margin1' type="date" id="date_end" min="2019-01-01" max="2025-12-31">
+                <button class='control_btn' style='font-size: 15; margin:140 5 5 5;' onclick='reload();'>재로딩</button>
+                <button class='control_btn ' style='font-size: 15; margin:5 5;' onclick='refresh();'>로딩 취소</button>
+                <div id='loading' style="margin:5 5; align-self: center;"></div>
+            </div>
+            <div id='div2-2' style='width: 72%; height:350px; padding-top: 30px;'>
+                <canvas id="myChart"></canvas>
+            </div>
+            <div id='div2-3' class='middle_div' style='width: 14%;'>
+                <button id='region0' class='btn region' style="width:113px; height: 40px;">전국</button>
+                <button id='region1' class='btn region'>서울</button>
+                <button id='region2' class='btn region'>경기</button>
+                <button id='region3' class='btn region'>인천</button>
+                <button id='region4' class='btn region'>강원</button>
+                <button id='region5' class='btn region'>세종</button>
+                <button id='region6' class='btn region'>대전</button>
+                <button id='region7' class='btn region'>충북</button>
+                <button id='region8' class='btn region'>충남</button>
+                <button id='region9' class='btn region'>광주</button>
+                <button id='region10' class='btn region'>전북</button>
+                <button id='region11' class='btn region'>전남</button>
+                <button id='region12' class='btn region'>대구</button>
+                <button id='region13' class='btn region'>울산</button>
+                <button id='region14' class='btn region'>부산</button>
+                <button id='region15' class='btn region'>경북</button>
+                <button id='region16' class='btn region'>경남</button>
+                <button id='region17' class='btn region'>제주</button>
+                <button id='region18' class='btn region'>검역</button>
+            </div>
+        </div>
+        <div id='div3' style='width: 850px; height: 40px;  padding: 10 10 10 140;'>
+            <button id='category0' class='btn category status' style='margin: 5 5 5 10;'>확진</button>
+            <button id='category1' class='btn category city'>지역 발생</button>
+            <button id='category2' class='btn category city'>해외 유입</button>
+            <button id='category3' class='btn category status'>검사</button>
+            <button id='category4' class='btn category status'>검사 음성</button>
+            <button id='category5' class='btn category status'>확진률</button>
+            <button id='category6' class='btn category city'>격리</button>
+            <button id='category7' class='btn category status'>격리 해제</button>
+            <button id='category8' class='btn category status'>사망</button>
+        </div>
+    </div>
+
+    <div id='div4' style='width: 710px; padding: 10;'>
+        <div class='margin1'>아이디</div>
+        <input value='inchrist95' class='margin1' id="user_id" type="text" style="height: fit-content; width: 100px;">
+        <button id='btn_retrieve' class='control_btn margin1' onclick="retrieve()">조회</button>
+
+        <div class='margin1'>파일 이름</div>
+        <input class='margin1' id="file_name" type="text" style="height: fit-content; width: 100px;">
+        <button id='btn_upload' class='control_btn margin1' onclick="upload()">업로드</button>
+
+        <button id='btn_capture' class='control_btn margin1' onclick="takeshot()">캡처</button>
+        <button id='btn_remove' class='control_btn margin1' onclick="remove()">삭제</button>
+
+        <img id='prev' style='width: 20px; height: 20px; margin: 0 5;' onclick="img_prev()" class="img_btn" src='ic_prev.png' />
+        <div id='img_current' style="margin: 0 0 0 3">-</div>
+        <div style="margin: 0 5">/</div>
+        <div id='img_total' style="margin: 0 3 0 0">-</div>
+        <img id='next' style='width: 20px; height: 20px; margin: 0 5;' onclick="img_next()" class="img_btn" src='ic_next.png' />
+    </div>
+
+    <div id='div5' style='width: 710px; padding: 10;'>
+        <div id='img_container' style='width: 670px; height: 330px;'>
+            <img id='captured_image'>
+        </div>
+    </div>
+</body>
+
+<script>
+    var img_index = -1;
+    var file_list = [];
+
+    function img_prev() {
+        if (img_index == 0) return;
+        img_index--;
+
+        var object_name = file_list[img_index].object_name;
+
+        $.ajax({
+            url: `/retrieve2?bucket_name=${$('#user_id').val()}&object_name=${object_name}`,
+            type: 'GET',
+            success: function(data) {
+                // alert(JSON.stringify(data.image.data));
+                $('#captured_image').attr("src", "data:image/jpg;base64," + btoa(String.fromCharCode.apply(null, new Uint8Array(data.image.data))));
+                // $('#captured_image').attr("src", `${data.file_name}.jpg`);
+                $('#img_current').text(img_index + 1);
+            },
+            error: function(e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function img_next() {
+        if (img_index == file_list.length - 1) return;
+        img_index++;
+
+        var object_name = file_list[img_index].object_name;
+
+        $.ajax({
+            url: `/retrieve2?bucket_name=${$('#user_id').val()}&object_name=${object_name}`,
+            type: 'GET',
+            success: function(data) {
+                // alert(JSON.stringify(data.image.data));
+                $('#captured_image').attr("src", "data:image/jpg;base64," + btoa(String.fromCharCode.apply(null, new Uint8Array(data.image.data))));
+                // $('#captured_image').attr("src", `${data.file_name}.jpg`);
+                $('#img_current').text(img_index + 1);
+            },
+            error: function(e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function retrieve() {
+        $.ajax({
+            url: `/get_file_list?bucket_name=${$('#user_id').val()}`,
+            type: 'GET',
+            success: function(data) {
+                file_list = [];
+                file_list = data.file_list;
+                //alert(file_list.length);
+                // alert(file_list[0].object_name);
+                img_index = -1;
+                img_next();
+                $('#img_total').text(file_list.length);
+            },
+            error: function(e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function convert_canvas() {
+        var oldCanvas = document.getElementById("myChart");
+        var newCanvas = document.createElement('canvas');
+        var context = newCanvas.getContext('2d');
+        newCanvas.width = oldCanvas.width;
+        newCanvas.height = oldCanvas.height;
+        context.fillStyle = 'white';
+        context.fillRect(0, 0, oldCanvas.width, oldCanvas.height);
+        context.drawImage(oldCanvas, 0, 0);
+        return newCanvas;
+    }
+
+    function takeshot() {
+        user_id = $('#user_id').val();
+
+        var newCanvas = convert_canvas();
+        var url = newCanvas.toDataURL('image/jpeg');
+        $('#captured_image').attr("src", `${url}`);
+    }
+
+    function remove() {
+        // alert(file_list[img_index].object_name);
+        $.ajax({
+            url: `/delete_gateway?bucket_name=${$('#user_id').val()}&object_name=${file_list[img_index].object_name}`,
+            type: 'DELETE',
+            success: function(data) {
+                retrieve();
+            },
+            error: function(e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function upload() {
+        $.ajax({
+            url: `/file2?bucket_name=${$('#user_id').val()}&object_name=${$('#file_name').val()}`,
+            type: 'POST',
+            success: function(data) {
+                //
+            },
+            error: function(e) {
+                console.log(e);
+            }
+        });
+    }
+</script>
+
+<script>
+    var title = "";
+    var labels = [];
+    var graph_value = [];
+    var day_count = 0;
+    var total_day = 0;
+    var duplicate = "";
+    var category = 0;
+    var region = '전국';
+    var category_name = category_to_title('확진');
+
+    function category_to_title(category) {
+        switch (category) {
+            case '확진':
+                return '확진자 수 (누적)';
+            case '지역 발생':
+                return '지역 발생 수 (일일)';
+            case '해외 유입':
+                return '해외 유입 수 (일일)';
+            case '검사':
+                return '검사자 수 (일일)';
+            case '검사 음성':
+                return '검사 결과 음성 판정 수 (누적)';
+            case '확진률':
+                return '검사 대비 확진률 (누적)';
+            case '격리':
+                return '격리 중인 환자 수 (일일)';
+            case '격리 해제':
+                return '격리 해제 환자 수 (누적)';
+            case '사망':
+                return '사망자 수 (누적)';
+        }
+    }
+
+    $('.region').click(function() {
+        if (wait) return;
+
+        // alert($(this).attr('id'));
+        // alert(region);
+        if ($(this).attr('disabled')) return;
+
+        region = $(this).text();
+        highlight_region($(this).attr('id'), true);
+        search();
+    });
+
+    $('.category').click(function() {
+        if (wait) return;
+
+        // alert($(this).attr('id'));
+        if ($(this).attr('disabled')) return;
+
+        category = $(this).index();
+        category_name = category_to_title($(this).text());
+        // alert(category);
+        highlight_category($(this).attr('id'), true);
+        search();
+    });
+
+    $('.status').click(function() {
+        disable_region();
+    });
+
+    $('.city').click(function() {
+        enable_region();
+    });
+
+    $('.region').not('#region0').click(function() {
+        enable_city_category();
+    });
+
+    $('#region0').click(function() {
+        enable_all_category();
+    });
+
+    function disable_region() {
+        $(".region").attr('disabled', true).css('opacity', 0.5);
+        $("#region0").attr('disabled', false).css('opacity', 1.0);
+    }
+
+    function enable_region() {
+        $(".region").attr('disabled', false).css('opacity', 1.0);
+    }
+
+    function highlight_region(id, bool) {
+        dehighlight_all_region();
+        // alert("#" + id);
+        if (bool) $("#" + id).css('background', '#FFD2D2');
+        else $("#" + id).css('background', '#EFEFEF');
+    }
+
+    function dehighlight_all_region() {
+        $(".region").css('background', '#EFEFEF');
+    }
+
+    function enable_all_category() {
+        $(".category").attr('disabled', false).css('opacity', 1.0);
+    }
+
+    function enable_status_category() {
+        dehighlight_all_category();
+        $(".city").attr('disabled', true).css('opacity', 0.5);
+        $(".status").attr('disabled', false).css('opacity', 1.0);
+    }
+
+    function enable_city_category() {
+        $(".status").attr('disabled', true).css('opacity', 0.5);
+        $(".city").attr('disabled', false).css('opacity', 1.0);
+    }
+
+    function highlight_category(id, bool) {
+        dehighlight_all_category();
+        // alert("#" + id);
+        if (bool) $("#" + id).css('background', '#FFD2D2');
+        else $("#" + id).css('background', '#EFEFEF');
+    }
+
+    function dehighlight_all_category() {
+        $(".category").css('background', '#EFEFEF');
+    }
+
+    function translate_region(region) {
+        switch (region) {
+            case '검역':
+                return 0;
+            case '제주':
+                return 1;
+            case '경남':
+                return 2;
+            case '경북':
+                return 3;
+            case '전남':
+                return 4;
+            case '전북':
+                return 5;
+            case '충남':
+                return 6;
+            case '충북':
+                return 7;
+            case '강원':
+                return 8;
+            case '경기':
+                return 9;
+            case '세종':
+                return 10;
+            case '울산':
+                return 11;
+            case '대전':
+                return 12;
+            case '광주':
+                return 13;
+            case '인천':
+                return 14;
+            case '대구':
+                return 15;
+            case '부산':
+                return 16;
+            case '서울':
+                return 17;
+            case '전국':
+                return 18;
+        }
+    }
+
+    function string_to_date(string) {
+        return new Date(string.substr(0, 4), string.substr(4, 2) - 1, string.substr(6, 2));
+    }
+
+    function number_to_string(number) {
+        if (number < 10) return "0" + number;
+        else return number;
+    }
+
+    function date_to_string(date) {
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        return year + "" + number_to_string(month) + "" + number_to_string(day);
+    }
+
+    function get_dif_day(date1, date2) {
+        return (date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24);
+    }
+
+    function date_to_calendar(date) {
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        return year + "-" + number_to_string(month) + "-" + number_to_string(day);
+    }
+
+    function calendar_to_string(calendar) {
+        return calendar.substr(0, 4) + calendar.substr(5, 2) + calendar.substr(8, 2);
+    }
+
+    function compare_calendar() {
+        var today = new Date();
+        var yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        if (calendar_to_string($('#date_start').val()) > calendar_to_string($('#date_end').val()) ||
+            calendar_to_string($('#date_start').val()) > calendar_to_string(date_to_calendar(yesterday)) ||
+            calendar_to_string($('#date_end').val()) > calendar_to_string(date_to_calendar(yesterday))) {
+            alert('조회 불가능한 기간입니다.');
+            return true;
+        } else false;
+    }
+
+    $('#date_start').change(function() {
+        if (compare_calendar()) return;
+        search();
+    });
+
+    $('#date_end').change(function() {
+        if (compare_calendar()) return;
+        search();
+    });
+
+    function get_total_day(from, to) {
+        const temp_from = new Date(from);
+        const temp_to = new Date(to);
+        temp_from.setDate(temp_from.getDate() + 1);
+        temp_to.setDate(temp_to.getDate() + 1);
+        if (category == 1 || category == 2 || category == 6) {
+            $.ajax({
+                url: '/corona_city_gateway?start=' + date_to_string(temp_from) + '&end=' + date_to_string(temp_to), // 딱 하루에 대하여 호출
+                type: 'GET',
+                success: function(data) {
+                    total_day = parseInt($(data.new_data).find('totalCount').text());
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        } else {
+            $.ajax({
+                url: '/corona_status_gateway?start=' + date_to_string(temp_from) + '&end=' + date_to_string(temp_to), // 딱 하루에 대하여 호출
+                type: 'GET',
+                success: function(data) {
+                    total_day = parseInt($(data.new_data).find('totalCount').text());
+                },
+                error: function(e) {
+                    console.log(e);
+                }
+            });
+        }
+    }
+    var wait = false;
+
+    function search() {
+        if (wait) return;
+        wait = true;
+        force_stop = false;
+
+        var from_date_string = calendar_to_string($('#date_start').val()); // '2020-10-03 -> '20201003'
+        var to_date_string = calendar_to_string($('#date_end').val());
+
+        var temp_date = string_to_date(from_date_string);
+        var to_date = string_to_date(to_date_string);
+
+        get_total_day(temp_date, to_date);
+
+        to_date.setDate(to_date.getDate() + 1);
+
+        while (!(temp_date.getTime() == to_date.getTime())) {
+            const copy_date = new Date(temp_date.getTime());
+            copy_date.setDate(copy_date.getDate() + 1); // 코로나 정보 특성상, 내일 날짜로 받아옴
+            if (category == 1 || category == 2 || category == 6) {
+                $.ajax({
+                    url: '/corona_city_gateway?start=' + date_to_string(copy_date) + '&end=' + date_to_string(copy_date), // 딱 하루에 대하여 호출
+                    type: 'GET',
+                    success: function(data) {
+                        // alert(data.new_data);
+                        var str = "";
+                        var value = 0;
+                        // alert($(data.new_data).find('item').length); // 주로 19개 또는 38개
+                        copy_date.setDate(copy_date.getDate() - 1); // 코로나 데이터 특성상, 어제 날짜 출력
+                        day_count += parseInt($(data.new_data).find('totalCount').text());
+                        $(data.new_data).find('item').each(function(idx) {
+                            if ($(data.new_data).find('item').length > 19) { // 하루 데이터가 2개 이상이면
+                                if (idx < $(data.new_data).find('item').length - 19) return; // 맨 마지막 데이터를 제외한 나머지 데이터들은 무시
+                            }
+                            if ((idx % 19) == translate_region(region)) { // 특정 지역에 대하여
+                                switch (category) {
+                                    case 1:
+                                        value = $(this).find("localOccCnt").text(); // 일일 지역 발생 수
+                                        break;
+                                    case 2:
+                                        // alert(idx % 19);
+                                        value = $(this).find("overFlowCnt").text(); // 해외 유입 수
+                                        // alert(date_to_string(copy_date) + " " + value);
+                                        break;
+                                    case 6:
+                                        value = $(this).find("isolIngCnt").text(); // 격리 중인 환자 수
+                                        break;
+                                }
+                                labels.push(copy_date);
+                                graph_value.push({
+                                    t: copy_date,
+                                    y: value
+                                });
+                            }
+                        });
+                        if (force_stop) return;
+                        check_load_complete();
+                    },
+                    error: function(e) {
+                        console.log(e);
+                    }
+                });
+            } else {
+                $.ajax({
+                    url: '/corona_status_gateway?start=' + date_to_string(copy_date) + '&end=' + date_to_string(copy_date), // 여러 날에 대하여 호출
+                    type: 'GET',
+                    success: function(data) {
+                        // alert(data.new_data);
+                        var str = "";
+                        var value = 0;
+                        // alert(JSON.stringify((data.new_data)));
+                        copy_date.setDate(copy_date.getDate() - 1); // 코로나 데이터 특성상, 어제 날짜 출력
+                        day_count += parseInt($(data.new_data).find('totalCount').text());
+                        $(data.new_data).find('item').each(function() { // 각 날짜에 대하여
+                            switch (category) {
+                                case 0:
+                                    value = $(this).find("decideCnt").text(); // 누적 확진
+                                    break;
+                                case 3:
+                                    value = $(this).find("examCnt").text(); // 일일 검사자 수
+                                    break;
+                                case 4:
+                                    value = $(this).find("resutlNegCnt").text(); // 검사 결과 음성판정 누적
+                                    break;
+                                case 5:
+                                    value = $(this).find("accDefRate").text(); // 검사 대비 확진률 (누적 평균)
+                                    break;
+                                case 7:
+                                    value = $(this).find("clearCnt").text(); // 격리해제 누적수
+                                    break;
+                                case 8:
+                                    value = $(this).find("deathCnt").text(); // 사망자 누적수
+                                    break;
+                                default:
+                                    break;
+                            }
+                            // alert(copy_date); // 바뀜
+                            if (labels[labels.length - 1] == copy_date) { // 날짜 중복 발생시 덮어쓰기
+                                labels.pop();
+                                graph_value.pop();
+                            }
+                            labels.push(copy_date);
+                            graph_value.push({
+                                t: copy_date,
+                                y: value
+                            });
+                            // alert(graph_value[graph_value.length - 1].t); // 바뀜
+                        });
+                        if (force_stop) return;
+                        check_load_complete();
+                    },
+                    error: function(e) {
+                        console.log(e);
+                    }
+                });
+            }
+
+            temp_date.setDate(temp_date.getDate() + 1)
+        }
+    }
+
+    function check_load_complete() {
+        // graph_value.forEach(function(value) {
+        //     alert(value.t);
+        // });
+        $('#loading').text(`로딩 : ( ${day_count} / ${total_day} )`);
+        if (day_count == total_day) {
+            function customSort(a, b) {
+                if (a.t.getTime() == b.t.getTime()) {
+                    return 0
+                }
+                return a.t.getTime() > b.t.getTime() ? 1 : -1;
+            }
+            graph_value.sort(customSort);
+            renderGraph();
+        }
+    }
+
+    function renderGraph() {
+        $('#div2-2').empty();
+        $('#div2-2').append('<canvas id="myChart"></canvas>');
+        var ctx = $('#myChart');
+        var myLineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: null,
+                datasets: [{
+                    label: category,
+                    data: graph_value,
+                    backgroundColor: ['rgba(75, 192, 192, 0.2)'],
+                    borderColor: ['rgba(75, 192, 192, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                title: {
+                    display: false,
+                    text: '코로나 바이러스 추세',
+                    fontSize: 20
+                },
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            parser: 'MM/DD/YYYY HH:mm',
+                            tooltipFormat: 'll.MM.DD',
+                            unit: 'day',
+                            unitStepSize: 1,
+                            displayFormats: {
+                                'day': 'YY년 MM월 DD일' // YYYY년 MM월 DD일 등의 형식으로 가능
+                            }
+                        },
+                        ticks: {
+                            autoSkip: true,
+                            maxTicksLimit: 10
+                        }
+                    }]
+                },
+                legend: {
+                    labels: {
+                        fontSize: 15
+                    },
+                    display: false,
+                },
+                animation: {
+                    duration: 1,
+                    onComplete: function() {
+                        var chartInstance = this.chart,
+                            ctx = chartInstance.ctx;
+                        ctx.font = Chart.helpers.fontString(12, 'normal', 'Helvetica Neue');
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+
+                        this.data.datasets.forEach(function(dataset, i) {
+                            var meta = chartInstance.controller.getDatasetMeta(i);
+                            meta.data.forEach(function(bar, index) {
+                                // var data = dataset.data[index];
+                                if (index == graph_value.length - 1)
+                                    ctx.fillText(graph_value[index].y, bar._model.x, bar._model.y - 5);
+                            });
+                        });
+                    }
+                }
+            }
+        });
+
+        title = region + " " + category_name;
+        $('#div1').text(title);
+
+        refresh();
+    }
+    var force_stop = false;
+
+    function refresh() {
+        force_stop = true;
+
+        total_day = 0;
+        day_count = 0;
+
+        labels = [];
+        graph_value = [];
+
+        $('#loading').text("로딩 완료");
+
+        wait = false;
+    }
+
+    function reload() {
+        refresh();
+        search();
+    }
+
+    $('#corona_status').click(function() {
+        var start = '20200920';
+        var end = '20201001';
+        var start_date = string_to_date(start);
+        var end_date = string_to_date(end);
+        start_date.setDate(start_date.getDate() + 1);
+        end_date.setDate(end_date.getDate() + 1);
+        $.ajax({
+            url: '/corona_status_gateway?start=' + date_to_string(start_date) + '&end=' + date_to_string(end_date),
+            type: 'GET',
+            success: function(data) {
+                // alert(data.new_data);
+                var str = "";
+                $(data.new_data).find('item').each(function() { // xml 문서 item 기준으로 분리후 반복
+                    // if (duplicate == $(this).find("stateDt").text()) return; // 날짜 중복 검사
+                    // else duplicate = $(this).find("stateDt").text();
+                    str += "<br>=============== " + $(this).find("stateDt").text() + " = 기준일 + 1" + " ===============";
+                    str += "<br><확진자 누적 수><br>";
+                    str += $(this).find("decideCnt").text();
+                    str += "<br><격리해제 누적수><br>";
+                    str += $(this).find("clearCnt").text();
+                    str += "<br><사망자 누적수><br>";
+                    str += $(this).find("deathCnt").text();
+                    str += "<br><치료 환자 누적수><br>";
+                    str += $(this).find("careCnt").text();
+                    str += "<br><일일 검사자 수><br>";
+                    str += $(this).find("examCnt").text();
+                    str += "<br><검사 결과 음성판정 누적><br>";
+                    str += $(this).find("resutlNegCnt").text();
+                    str += "<br><검사 누적수><br>";
+                    str += $(this).find("accExamCompCnt").text();
+                    str += "<br><검사 대비 확진률 (누적 평균)><br>";
+                    str += $(this).find("accDefRate").text();
+                });
+                $("#show_corona_status").html(str);
+            },
+            error: function(e) {
+                console.log(e);
+            }
+        });
+    });
+
+    $('#corona_city').click(function() {
+        var start = '20200920';
+        var end = '20201001';
+        var start_date = string_to_date(start);
+        var end_date = string_to_date(end);
+        start_date.setDate(start_date.getDate() + 1);
+        end_date.setDate(end_date.getDate() + 1);
+        $.ajax({
+            url: '/corona_city_gateway?start=' + date_to_string(start_date) + '&end=' + date_to_string(end_date),
+            type: 'GET',
+            success: function(data) {
+                // alert(data.new_data);
+                var str = "";
+                $(data.new_data).find('item').each(function(index) { // 각 지역에 대하여
+                    if (index % 19 == 0) str += `<br><${$(this).find("stdDay").text()}의 전날>`;
+                    str += "<br>=============== " + $(this).find("gubun").text() + " ===============";
+                    str += "<br><누적 사망자 수><br>";
+                    str += $(this).find("deathCnt").text();
+                    str += "<br><누적 확진자 수><br>";
+                    str += $(this).find("defCnt").text();
+                    str += "<br><격리 중인 환자 수><br>";
+                    str += $(this).find("isolIngCnt").text();
+                    str += "<br><해외 유입 수><br>";
+                    str += $(this).find("overFlowCnt").text();
+                    str += "<br><일일 지역 발생 수><br>";
+                    str += $(this).find("localOccCnt").text();
+                });
+                $("#show_corona_city").html(str);
+            },
+            error: function(e) {
+                console.log(e);
+            }
+        });
+    });
+
+    // on load
+    $(function() {
+        var today = new Date();
+        var yesterday = new Date();
+        var past = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        past.setDate(today.getDate() - 7);
+        $('#date_start').val(date_to_calendar(past));
+        $('#date_end').val(date_to_calendar(yesterday));
+
+        disable_region();
+        highlight_category('category0', true);
+        highlight_region('region0', true);
+        search();
+    });
+</script>
+
+</html>

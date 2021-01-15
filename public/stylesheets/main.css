@@ -1,0 +1,38 @@
+#container {
+    display: flex;
+    flex-direction: column;
+    border: 0.5px solid black;
+    border-radius: 10px;
+    width: 640px;
+    height: fit-content;
+    text-align: center;
+    margin: 20;
+    padding: 20;
+    background: #e1fdff;
+}
+
+#title {
+    font-size: 30;
+    margin-bottom: 20;
+}
+
+#direct_box {
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+}
+
+.btn {
+    border: 0.5px solid black;
+    border-radius: 10px;
+    padding: 10;
+    margin: 10;
+    font-size: 25;
+    height: 200px;
+    line-height: 200px;
+    text-align: center;
+}
+
+body {
+    background: #2d5593;
+}
